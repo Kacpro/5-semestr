@@ -1,0 +1,1 @@
+/usr/bin/cc -g   CMakeFiles/CNN.dir/main.c.o  -o CNN 

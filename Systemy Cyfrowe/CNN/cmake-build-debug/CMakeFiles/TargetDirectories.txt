@@ -1,0 +1,3 @@
+/home/kacpro/5 semestr/Systemy Cyfrowe/CNN/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/kacpro/5 semestr/Systemy Cyfrowe/CNN/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/kacpro/5 semestr/Systemy Cyfrowe/CNN/cmake-build-debug/CMakeFiles/CNN.dir
