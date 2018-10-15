@@ -64,12 +64,4 @@ TestCase* parseMnist(char* sourcePath, char* labelsPath)
 }
 
 
-int main()
-{
-    TestCase * tests = parseMnist("../train-images.idx3-ubyte", "../train-labels.idx1-ubyte");
-    createPGM("test.pgm", tests[100].input);
-    printf("%d\n", tests[100].expectedValue);
-    return 0;
-}
-
 #endif

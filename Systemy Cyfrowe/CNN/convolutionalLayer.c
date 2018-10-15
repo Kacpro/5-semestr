@@ -1,4 +1,5 @@
 #include "matrix.c"
+#include "sigmoid.c"
 
 
 struct convolutionalLayer
@@ -29,10 +30,10 @@ Matrix calcSingleFutureMap(Matrix source, Matrix weights, double bias)
 
 Matrix applyPooling(Matrix source)
 {
-    double** value = calloc(source.rowNum/2, sizeof(double*));
+    double** value = calloc((size_t)source.rowNum/2, sizeof(double*));
     for (int i=0; i<source.rowNum/2; i++)
     {
-        value[i] = calloc(source.columnNum/2, sizeof(double));
+        value[i] = calloc((size_t)source.columnNum/2, sizeof(double));
     }
     for (int i=0; i<source.rowNum; i += 2)
     {
@@ -42,10 +43,23 @@ Matrix applyPooling(Matrix source)
             if (source.value[i+1][j] > max) max = source.value[i+1][j];
             if (source.value[i][j+1] > max) max = source.value[i][j+1];
             if (source.value[i+1][j+1] > max) max = source.value[i+1][j+1];
-            value[i][j] = max;
+            value[i/2][j/2] = max;
         }
     }
     return matrixInit(source.rowNum/2, source.columnNum/2, value);
+}
+
+Matrix applyConvActivationFunction(Matrix source)
+{
+    double** value = matrixCopy(source).value;
+    for (int i=0; i<source.rowNum; i++)
+    {
+        for (int j=0; j<source.columnNum; j++)
+        {
+            value[i][j] = sigmoid(value[i][j]);
+        }
+    }
+    return matrixInit(source.rowNum, source.columnNum, value);
 }
 
 
@@ -53,14 +67,34 @@ Matrix* convForwardFeed(ConvolutionalLayer convLayer, Matrix* sources, int numbe
 {
     Matrix* result = calloc((size_t)(numberOfSources * convLayer.featureMapNum), sizeof(Matrix));
     int counter = 0;
+
     for (int i=0; i<numberOfSources; i++)
     {
         for (int j=0; j<convLayer.featureMapNum; j++)
         {
-            result[counter] = applyPooling(calcSingleFutureMap(sources[i], convLayer.weights[j], convLayer.biases[j]));
+            result[counter] = applyPooling(applyConvActivationFunction(
+                    calcSingleFutureMap(sources[i], convLayer.weights[j], convLayer.biases[j])));
             counter++;
         }
     }
     return result;
 }
 
+
+ConvolutionalLayer convLayerInit(int futureMapNum)
+{
+    ConvolutionalLayer convLayer;
+    convLayer.featureMapNum = futureMapNum;
+
+    Matrix* weights = calloc((size_t)futureMapNum, sizeof(Matrix));
+    double* biases = calloc((size_t)futureMapNum, sizeof(double));
+    for (int i=0; i<futureMapNum; i++)
+    {
+        weights[i] = matrixGenerate(5, 5);
+        biases[i] = genRand();
+    }
+    convLayer.biases = biases;
+    convLayer.weights = weights;
+
+    return convLayer;
+}

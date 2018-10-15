@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 
 
 typedef struct matrix Matrix;
@@ -134,7 +135,7 @@ void matrixPrint(Matrix m)
     for (int i=0; i<m.rowNum; i++)
     {
         for (int j = 0; j < m.columnNum; j++)
-            printf("%f ", m.value[i][j]);
+            printf("%f\t", m.value[i][j]);
         printf("\n");
     }
 }
@@ -225,6 +226,9 @@ Matrix innerConvolution(Matrix source, Matrix filter)
 
 Matrix outerConvolution(Matrix source, Matrix filter)
 {
+    matrixPrint(source);
+    matrixPrint(filter);
+
     double** value = calloc((size_t)(source.rowNum + filter.rowNum - 1), sizeof(double*));
     for (int i=0; i<(source.rowNum + filter.rowNum - 1); i++)
     {
@@ -237,10 +241,10 @@ Matrix outerConvolution(Matrix source, Matrix filter)
                 for (int m=0; m<filter.columnNum; m++)
                 {
                     singleValue += filter.value[n][m] *
-                                           (i+n - filter.rowNum + 1) >= 0 && i+n - filter.rowNum + 1 < source.rowNum &&
+                                           ((i+n - filter.rowNum + 1) >= 0 && i+n - filter.rowNum + 1 < source.rowNum &&
                                            (j+m - filter.columnNum + 1) >= 0 && j+m - filter.columnNum + 1 < source.columnNum
                                                 ? source.value[i+n - filter.rowNum + 1][j+m - filter.columnNum + 1]
-                                                : 0;
+                                                : 0);
                 }
             }
             value[i][j] = singleValue;
@@ -249,6 +253,46 @@ Matrix outerConvolution(Matrix source, Matrix filter)
     return matrixInit((source.rowNum + filter.rowNum - 1), (source.columnNum + filter.columnNum - 1), value);
 }
 
+
+Matrix matrixGenerateTest(int rows, int columns)
+{
+    double** value = calloc((size_t)rows, sizeof(double*));
+    for (int i=0; i<rows; i++)
+    {
+        value[i] = calloc((size_t)columns, sizeof(double));
+        for (int j=0; j<columns; j++)
+        {
+            value[i][j] = rand() % 10;
+        }
+    }
+    return matrixInit(rows, columns, value);
+}
+
+
+double genRand()
+{
+    double result = 0;
+    for (int i=0; i<12; i++)
+    {
+        result += drand48();
+    }
+    return result - 6;
+}
+
+
+Matrix matrixGenerate(int rows, int columns)
+{
+    double** value = calloc((size_t)rows, sizeof(double*));
+    for (int i=0; i<rows; i++)
+    {
+        value[i] = calloc((size_t)columns, sizeof(double));
+        for (int j=0; j<columns; j++)
+        {
+            value[i][j] = genRand();
+        }
+    }
+    return matrixInit(rows, columns, value);
+}
 
 
 
