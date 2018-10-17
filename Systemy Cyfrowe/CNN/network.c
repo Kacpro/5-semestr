@@ -37,3 +37,26 @@ Network networkInit(int convLayerNum, int* futureMapNum, int fullLayerNum, int* 
 
     return network;
 }
+
+
+Matrix feedForward(Network network, Matrix input)
+{
+    Matrix* buf = calloc(1, sizeof(Matrix));
+    buf[0] = input;
+
+    for (int i=0; i<network.convLayerNum; i++)
+    {
+        buf = convForwardFeed(network.convLayers[i], buf, i>0 ? network.convLayers[i-1].featureMapNum : 1);
+    }
+
+    Matrix flatBuf;
+    flatBuf = flattenSources(network.fullLayers[0], buf, network.convLayers[network.convLayerNum - 1].featureMapNum);
+
+    for (int i=0; i<network.fullLayerNum; i++)
+    {
+        flatBuf = fullForwardFeed(network.fullLayers[i], flatBuf);
+    }
+
+    matrixPrint(flatBuf);
+    return flatBuf;
+}

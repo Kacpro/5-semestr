@@ -1,3 +1,6 @@
+#ifndef _CONVOLUTIONALLAYER_
+#define _CONVOLUTIONALLAYER_
+
 #include "matrix.c"
 #include "sigmoid.c"
 
@@ -98,3 +101,5 @@ ConvolutionalLayer convLayerInit(int futureMapNum)
 
     return convLayer;
 }
+
+#endif

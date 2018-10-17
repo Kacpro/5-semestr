@@ -1,9 +1,11 @@
+#ifndef _FULLYCONNECTEDLAYER_
+#define _FULLYCONNECTEDLAYER_
+
 #include "matrix.c"
 #include "sigmoid.c"
 
 struct fullyConnectedLayer
 {
-    int numberOfNeurons;
     int numberOfInputs;
 
     Matrix weights;
@@ -54,9 +56,8 @@ Matrix applyFullActivationFunction(Matrix source)
 
 
 
-Matrix fullForwardFeed(FullyConnectedLayer fullLayer, Matrix* sources, int numberOfSources)
+Matrix fullForwardFeed(FullyConnectedLayer fullLayer, Matrix input)
 {
-    Matrix input = flattenSources(fullLayer, sources, numberOfSources);
     return applyFullActivationFunction(matrixAdd(matrixMul(fullLayer.weights, input), fullLayer.biases));
 }
 
@@ -64,7 +65,6 @@ Matrix fullForwardFeed(FullyConnectedLayer fullLayer, Matrix* sources, int numbe
 FullyConnectedLayer fullLayerInit(int numberOfNeurons, int numberOfInputs)
 {
     FullyConnectedLayer fullLayer;
-    fullLayer.numberOfNeurons = numberOfNeurons;
 
     Matrix weights = matrixGenerate(numberOfNeurons, numberOfInputs);
     fullLayer.weights = weights;
@@ -76,3 +76,5 @@ FullyConnectedLayer fullLayerInit(int numberOfNeurons, int numberOfInputs)
 
     return fullLayer;
 }
+
+#endif

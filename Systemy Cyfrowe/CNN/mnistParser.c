@@ -44,7 +44,7 @@ TestCase* parseMnist(char* sourcePath, char* labelsPath)
             for (int k=0; k<width; k++)
             {
                 fscanf(source, "%c", &pixelValue);
-                value[j][k] = (double) pixelValue;
+                value[j][k] = pixelValue/255.0;
             }
         }
 
