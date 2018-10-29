@@ -22,6 +22,9 @@
 \maketitle
 
 \section{Założenia projektu}
+\begin{center}
+\includegraphics[scale=0.6]{CNN.png}
+\end{center}\
 Celem projektu jest stworzenie działającej konwolucyjnej sieci neuronowej, która będzie służyła do rozpoznawania cyfr na podstawie zdjęć. Poza obsługą kamery oraz konwersją zdjęcia na bitmapę projekt zostanie wykonany w całości niskopoziomowo.
 \section{Plan prac}
 \begin{enumerate}
@@ -38,9 +41,19 @@ Celem projektu jest stworzenie działającej konwolucyjnej sieci neuronowej, kt�
 \item Baza danych testowych MNIST
 \end{enumerate}
 \section{Postęp prac}
-...
+\begin{enumerate}
+
+\item W pierwszym tygodniu udało mi się zaimplementować bibliotekę do operacji na macierzach, pozostałe funkcje matematyczne oraz niektóre funkcje do obsługi sieci.
+
+\item Następnie rozpocząłem pracę nad funkcjami związanymi z uczeniem sieci. Wymagało to dużej ilości czasu w związku z potrzebą zaznajomienia się z tematem. W trzecim tygodniu prac udało mi się skończyć implementację logiki sieci. Korzystając z narzędzia Sanitizer naprawiłem wszystkie wycieki pamięci. Pierwsze testy wypadły dość optymistycznie.  
+
+\end{enumerate}
+
 \section{Bibliografia}
 \url{http://neuralnetworksanddeeplearning.com/chap1.html}\\\\
 \url{https://grzegorzgwardys.wordpress.com/2016/04/22/8}\\\\
+\url{https://medium.com/the-bioinformatics-press/only-numpy-understanding-back-propagation-for-max-pooling-layer-in-multi-layer-cnn-with-example-f7be891ee4b4}\\\\
+\url{https://www.jefkine.com/general/2016/09/05/backpropagation-in-convolutional-neural-networks/}\\\\
+\url{https://www.youtube.com/watch?v=EjzrnqlWYYY&t=695s}
 
 \end{document}

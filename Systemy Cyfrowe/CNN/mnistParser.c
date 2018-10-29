@@ -17,8 +17,14 @@ long readWord(FILE* file)
 }
 
 
+struct testData
+{
+    TestCase* testSet;
+    TestCase* checkSet;
+};
 
-TestCase* parseMnist(char* sourcePath, char* labelsPath)
+
+struct testData parseMnist(char* sourcePath, char* labelsPath)
 {
     FILE* source = fopen(sourcePath, "rb");
     FILE* labels = fopen(labelsPath, "rb");
@@ -32,7 +38,9 @@ TestCase* parseMnist(char* sourcePath, char* labelsPath)
     readWord(labels);
     readWord(labels);
 
-    TestCase* result = calloc((size_t)imageNum, sizeof(TestCase));
+
+    TestCase* result = calloc((size_t)imageNum - 10000, sizeof(TestCase));
+    TestCase* checkSet = calloc((size_t)10000, sizeof(TestCase));
 
     for (int i=0; i<imageNum; i++)
     {
@@ -54,13 +62,18 @@ TestCase* parseMnist(char* sourcePath, char* labelsPath)
 
         Matrix matrix = matrixInit((int)(height), (int)width, value);
         TestCase testCase = testCaseInit(matrix, (int)expectedValue);
-        result[i] = testCase;
+        if (i >= 10000) result[i-10000] = testCase;
+        else checkSet[i] = testCase;
     }
+
+    struct testData data;
+    data.testSet = result;
+    data.checkSet = checkSet;
 
     fclose(labels);
     fclose(source);
     printf("parsing finished\n");
-    return result;
+    return data;
 }
 
 

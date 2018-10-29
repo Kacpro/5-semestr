@@ -7,6 +7,6 @@ all:
 	gcc -Wall -c convolutionalLayer.c
 	gcc -Wall -c fullyConnectedLayer.c
 	gcc -Wall -c sigmoid.c
-	gcc -Wall main.c -lm
+	gcc -Wall main.c -lm -g -fsanitize=leak -fsanitize=address -lasan
 	rm *.o
 

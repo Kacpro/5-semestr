@@ -1,79 +1,189 @@
 package main;
 
-
 import java.util.LinkedList;
 import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-class Buffer
-{
-    private Integer size;
-    private Integer numberOfElements;
 
-    private final Lock lock = new ReentrantLock();
+abstract class Buffer
+{
+    protected Integer size;
+    protected Integer numberOfElements;
+
+    protected final Lock lock = new ReentrantLock();
+
+    protected SortedMap<Integer, Long> consumerTimes;
+    protected SortedMap<Integer, Long> producerTimes;
+    protected List<Integer> numberOfConsumptions;
+    protected List<Integer> numberOfProductions;
+
+    protected Integer DIV = 100;
+
+
+    public void printAvgs()
+    {
+        for (int i = 0; i<(size/2)/ DIV; i++)
+        {
+            long buf = consumerTimes.get(i) == null ? 0 : consumerTimes.get(i);
+            System.out.print((buf / numberOfConsumptions.get(i)) + " ");
+        }
+        for (int i = 0; i<(size/2)/ DIV; i++)
+        {
+            long buf = producerTimes.get(i) == null ? 0 : producerTimes.get(i);
+            System.out.print((buf / numberOfProductions.get(i)) + " ");
+        }
+        System.out.println();
+    }
+
+    public abstract void putElements(Integer numberOfElements) throws InterruptedException;
+    public abstract void takeElements(Integer numberOfElements) throws InterruptedException;
+}
+
+
+
+class Buffer1 extends Buffer
+{
     private final Condition notFull = lock.newCondition();
     private final Condition notEmpty = lock.newCondition();
 
-    private Double avgConsumerTime;
-    private Double avgProducerTime;
-    private Integer numberOfConsumptions;
-    private Integer numberOfProductions;
 
-    public Buffer(Integer size)
+    public Buffer1(Integer size)
     {
         this.size = size;
         this.numberOfElements = 0;
-        this.numberOfConsumptions = 0;
-        this.numberOfProductions = 0;
-        this.avgConsumerTime = 0.0;
-        this.avgProducerTime = 0.0;
+
+        consumerTimes = new TreeMap<>();
+        producerTimes = new TreeMap<>();
+        numberOfProductions = new LinkedList<>();
+        numberOfConsumptions = new LinkedList<>();
+
+        for (int i = 0; i<(size/2)/ DIV; i++)
+        {
+            numberOfProductions.add(1);
+            numberOfConsumptions.add(1);
+        }
     }
 
     public void putElements(Integer numberOfElements) throws InterruptedException
     {
         lock.lock();
+        numberOfConsumptions.set((numberOfElements - 1) / DIV, numberOfConsumptions.get((numberOfElements - 1) / DIV) != null ? (numberOfConsumptions.get((numberOfElements - 1) / DIV) + 1) : 1);
         Long start = System.nanoTime();
         while (numberOfElements + this.numberOfElements > size)
         {
+
             notFull.await();
         }
         Long end = System.nanoTime();
-        avgProducerTime = (avgProducerTime * numberOfProductions + (end - start))/(numberOfProductions + 1);
-        numberOfProductions++;
         this.numberOfElements += numberOfElements;
         notEmpty.signalAll();
         lock.unlock();
+
+        producerTimes.merge((numberOfElements - 1) / DIV, end - start, (a, b) -> a+b);
     }
 
     public void takeElements(Integer numberOfElements) throws InterruptedException
     {
         lock.lock();
+        numberOfProductions.set((numberOfElements - 1) / DIV, numberOfProductions.get((numberOfElements-1) / DIV) != null ? (numberOfProductions.get((numberOfElements - 1) / DIV) + 1) : 1);
         Long start = System.nanoTime();
         while (this.numberOfElements < numberOfElements)
         {
             notEmpty.await();
         }
         Long end = System.nanoTime();
-        avgConsumerTime = (avgConsumerTime * numberOfConsumptions + (end - start))/(numberOfConsumptions + 1);
-        numberOfConsumptions++;
+
         this.numberOfElements -= numberOfElements;
         notFull.signalAll();
         lock.unlock();
-    }
 
-    public void printAvgs()
-    {
-        System.out.println("Consumer avg: " + avgConsumerTime);
-        System.out.println("Producer avg: " + avgProducerTime);
-        avgProducerTime = 0.0;
-        avgConsumerTime = 0.0;
-        numberOfProductions = 0;
-        numberOfConsumptions = 0;
+        consumerTimes.merge((numberOfElements - 1) / DIV, end - start, (a, b) -> a+b);
     }
 }
+
+
+
+class Buffer2 extends Buffer
+{
+    private final Condition firstProd = lock.newCondition();
+    private final Condition firstCons = lock.newCondition();
+    private final Condition restProd = lock.newCondition();
+    private final Condition restCons = lock.newCondition();
+
+    private boolean firstProdEmpty;
+    private boolean firstConsEmpty;
+
+
+    public Buffer2(Integer size)
+    {
+        this.size = size;
+        this.numberOfElements = 0;
+
+        consumerTimes = new TreeMap<>();
+        producerTimes = new TreeMap<>();
+        numberOfProductions = new LinkedList<>();
+        numberOfConsumptions = new LinkedList<>();
+        firstProdEmpty = true;
+        firstConsEmpty = true;
+
+        for (int i = 0; i<(size/2)/ DIV; i++)
+        {
+            numberOfProductions.add(1);
+            numberOfConsumptions.add(1);
+        }
+    }
+
+    public void putElements(Integer numberOfElements) throws InterruptedException {
+        lock.lock();
+        numberOfProductions.set((numberOfElements - 1) / DIV, numberOfProductions.get((numberOfElements - 1) / DIV) != null ? (numberOfProductions.get((numberOfElements - 1) / DIV) + 1) : 1);
+        Long start = System.nanoTime();
+        if (!firstProdEmpty) restProd.await();
+        while (numberOfElements + this.numberOfElements > size)
+        {
+            firstProdEmpty = false;
+            firstProd.await();
+            firstProdEmpty = true;
+        }
+        Long end = System.nanoTime();
+        this.numberOfElements += numberOfElements;
+
+        restProd.signal();
+        firstCons.signal();
+
+        lock.unlock();
+        producerTimes.merge((numberOfElements - 1) / DIV, end - start, (a, b) -> a+b);
+    }
+
+    public void takeElements(Integer numberOfElements) throws InterruptedException
+    {
+        lock.lock();
+        numberOfConsumptions.set((numberOfElements - 1) / DIV, numberOfConsumptions.get((numberOfElements-1) / DIV) != null ? (numberOfConsumptions.get((numberOfElements - 1) / DIV) + 1) : 1);
+        Long start = System.nanoTime();
+
+        if (!firstConsEmpty) restCons.await();
+        while (this.numberOfElements < numberOfElements)
+        {
+            firstConsEmpty = false;
+            firstCons.await();
+            firstConsEmpty = true;
+        }
+        Long end = System.nanoTime();
+        this.numberOfElements -= numberOfElements;
+
+        restCons.signal();
+        firstProd.signal();
+
+        lock.unlock();
+        consumerTimes.merge((numberOfElements - 1) / DIV, end - start, (a, b) -> a+b);
+    }
+}
+
+
 
 class Consumer extends Thread
 {
@@ -90,10 +200,10 @@ class Consumer extends Thread
     {
         while (true)
         {
-            Integer numberOfElements = ThreadLocalRandom.current().nextInt(1, maxNumberOfElements);
+            Integer numberOfElements = ThreadLocalRandom.current().nextInt(1, maxNumberOfElements+1);
+//            Integer numberOfElements = (int)Math.floor(Math.pow(ThreadLocalRandom.current().nextDouble(), 4) * maxNumberOfElements + 1);
             try
             {
-//                System.out.println("Taking: " + numberOfElements);
                 buffer.takeElements(numberOfElements);
             }
             catch (InterruptedException e)
@@ -120,7 +230,8 @@ class Producer extends Thread
     {
         while (true)
         {
-            Integer numberOfElements = ThreadLocalRandom.current().nextInt(1, maxNumberOfElements);
+           Integer numberOfElements = ThreadLocalRandom.current().nextInt(1, maxNumberOfElements+1);
+//            Integer numberOfElements = (int)Math.floor(Math.pow(ThreadLocalRandom.current().nextDouble(), 4) * maxNumberOfElements + 1);
             try
             {
                 buffer.putElements(numberOfElements);
@@ -136,17 +247,16 @@ class Producer extends Thread
 
 
 
-
 public class Main
 {
     public static void main(String[] args) throws InterruptedException {
         List<Thread> threads = new LinkedList<>();
 
-        Integer numberOfConsumers = 10;
-        Integer numberOfProducers = 10;
-        Integer bufferSize = 20;
+        Integer numberOfConsumers = 1000;
+        Integer numberOfProducers = 1000;
+        Integer bufferSize = 20000;
 
-        Buffer buffer = new Buffer(bufferSize);
+        Buffer1 buffer = new Buffer1(bufferSize);
 
         for (int i=0; i<numberOfConsumers; i++)
         {
@@ -165,7 +275,7 @@ public class Main
 
         while (true)
         {
-            Thread.sleep(1000);
+            Thread.sleep(5000);
             buffer.printAvgs();
         }
 

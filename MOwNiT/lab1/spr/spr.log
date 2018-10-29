@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2018.9.12)  9 OCT 2018 23:11
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2018.10.12)  22 OCT 2018 12:46
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -683,8 +683,8 @@ Underfull \hbox (badness 10000) in paragraph at lines 78--80
 [3 <./time_complex.png>] (./spr.aux) ) 
 Here is how much of TeX's memory you used:
  5942 strings out of 494269
- 83685 string characters out of 6162728
- 184860 words of memory out of 5000000
+ 83685 string characters out of 6162727
+ 184862 words of memory out of 5000000
  9206 multiletter control sequences out of 15000+600000
  12034 words of font info for 35 fonts, out of 8000000 for 9000
  392 hyphenation exceptions out of 8191
@@ -697,9 +697,9 @@ ar/fonts/pk/ljfour/jknappen/ec/ecrm1728.600pk></usr/share/texlive/texmf-dist/fo
 nts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist/fonts/ty
 pe1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/pub
 lic/amsfonts/cm/cmr8.pfb>
-Output written on spr.pdf (3 pages, 125563 bytes).
+Output written on spr.pdf (3 pages, 125223 bytes).
 PDF statistics:
- 169 PDF objects out of 1000 (max. 8388607)
+ 168 PDF objects out of 1000 (max. 8388607)
  34 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  16 words of extra memory for PDF output out of 10000 (max. 10000000)

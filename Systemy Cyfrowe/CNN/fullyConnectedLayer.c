@@ -17,7 +17,7 @@ typedef struct fullyConnectedLayer FullyConnectedLayer;
 
 Matrix flattenSources(FullyConnectedLayer fullLayer, Matrix* sources, int numberOfSources)
 {
-    double** value = calloc(fullLayer.numberOfInputs, sizeof(double*));
+    double** value = calloc((size_t)fullLayer.numberOfInputs, sizeof(double*));
     for (int i=0; i<fullLayer.numberOfInputs; i++)
     {
         value[i] = calloc(1, sizeof(double));
@@ -44,11 +44,11 @@ Matrix applyFullActivationFunction(Matrix source)
     {
         exit(-1);
     }
-    double** value = matrixCopy(source).value;
-
+    double** value = calloc((size_t)source.rowNum, sizeof(double*));
     for (int i=0; i<source.rowNum; i++)
     {
-        value[i][0] = sigmoid(value[i][0]);
+        value[i] = calloc(1, sizeof(double));
+        value[i][0] = sigmoid(source.value[i][0]);
     }
 
     return matrixInit(source.rowNum, source.columnNum, value);
@@ -58,7 +58,12 @@ Matrix applyFullActivationFunction(Matrix source)
 
 Matrix fullForwardFeed(FullyConnectedLayer fullLayer, Matrix input)
 {
-    return applyFullActivationFunction(matrixAdd(matrixMul(fullLayer.weights, input), fullLayer.biases));
+    Matrix mul = matrixMul(fullLayer.weights, input);
+    Matrix add = matrixAdd(mul, fullLayer.biases);
+    Matrix result = applyFullActivationFunction(add);
+    matrixFree(mul);
+    matrixFree(add);
+    return result;
 }
 
 
@@ -76,5 +81,11 @@ FullyConnectedLayer fullLayerInit(int numberOfNeurons, int numberOfInputs)
 
     return fullLayer;
 }
+
+
+
+
+
+
 
 #endif

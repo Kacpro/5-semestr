@@ -1,0 +1,35 @@
+\documentclass[11pt, a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[polish]{babel}
+\usepackage{listings}
+\usepackage{mathtools}
+\usepackage{blindtext}
+\usepackage{scrextend}
+\usepackage{graphicx}
+
+
+\begin{document}
+
+\begin{center}
+\section{10+10 vs 1000+1000}
+\includegraphics[scale=0.3]{10_10_1000_rand_norm}
+\includegraphics[scale=0.3]{1000_1000_1000_rand_norm}
+
+
+\section{rand vs rand2}
+\includegraphics[scale=0.3]{100_100_10000_rand_norm}
+\includegraphics[scale=0.3]{100_100_10000_rand2_norm}
+
+\section{norm vs fair}
+\includegraphics[scale=0.3]{100_100_10000_rand2_norm}
+\includegraphics[scale=0.3]{100_100_10000_rand2_fair}
+
+\section{1000 vs 100000}
+\includegraphics[scale=0.3]{100_100_1000_rand_norm}
+\includegraphics[scale=0.3]{100_100_100000_rand_norm}
+
+\end{center}
+
+\end{document}

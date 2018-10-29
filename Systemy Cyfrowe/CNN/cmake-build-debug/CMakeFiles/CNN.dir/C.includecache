@@ -1,0 +1,88 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/kacpro/5 semestr/Systemy Cyfrowe/CNN/convolutionalLayer.c
+matrix.c
+/home/kacpro/5 semestr/Systemy Cyfrowe/CNN/matrix.c
+sigmoid.c
+/home/kacpro/5 semestr/Systemy Cyfrowe/CNN/sigmoid.c
+
+/home/kacpro/5 semestr/Systemy Cyfrowe/CNN/costFunction.c
+matrix.c
+/home/kacpro/5 semestr/Systemy Cyfrowe/CNN/matrix.c
+
+/home/kacpro/5 semestr/Systemy Cyfrowe/CNN/fullyConnectedLayer.c
+matrix.c
+/home/kacpro/5 semestr/Systemy Cyfrowe/CNN/matrix.c
+sigmoid.c
+/home/kacpro/5 semestr/Systemy Cyfrowe/CNN/sigmoid.c
+
+/home/kacpro/5 semestr/Systemy Cyfrowe/CNN/imageParser.c
+matrix.c
+/home/kacpro/5 semestr/Systemy Cyfrowe/CNN/matrix.c
+
+/home/kacpro/5 semestr/Systemy Cyfrowe/CNN/main.c
+stdio.h
+-
+matrix.c
+/home/kacpro/5 semestr/Systemy Cyfrowe/CNN/matrix.c
+convolutionalLayer.c
+/home/kacpro/5 semestr/Systemy Cyfrowe/CNN/convolutionalLayer.c
+fullyConnectedLayer.c
+/home/kacpro/5 semestr/Systemy Cyfrowe/CNN/fullyConnectedLayer.c
+testCase.c
+/home/kacpro/5 semestr/Systemy Cyfrowe/CNN/testCase.c
+imageParser.c
+/home/kacpro/5 semestr/Systemy Cyfrowe/CNN/imageParser.c
+mnistParser.c
+/home/kacpro/5 semestr/Systemy Cyfrowe/CNN/mnistParser.c
+network.c
+/home/kacpro/5 semestr/Systemy Cyfrowe/CNN/network.c
+
+/home/kacpro/5 semestr/Systemy Cyfrowe/CNN/matrix.c
+stdlib.h
+-
+stdio.h
+-
+time.h
+-
+
+/home/kacpro/5 semestr/Systemy Cyfrowe/CNN/mnistParser.c
+testCase.c
+/home/kacpro/5 semestr/Systemy Cyfrowe/CNN/testCase.c
+imageParser.c
+/home/kacpro/5 semestr/Systemy Cyfrowe/CNN/imageParser.c
+
+/home/kacpro/5 semestr/Systemy Cyfrowe/CNN/network.c
+matrix.c
+/home/kacpro/5 semestr/Systemy Cyfrowe/CNN/matrix.c
+fullyConnectedLayer.c
+/home/kacpro/5 semestr/Systemy Cyfrowe/CNN/fullyConnectedLayer.c
+convolutionalLayer.c
+/home/kacpro/5 semestr/Systemy Cyfrowe/CNN/convolutionalLayer.c
+costFunction.c
+/home/kacpro/5 semestr/Systemy Cyfrowe/CNN/costFunction.c
+testCase.c
+/home/kacpro/5 semestr/Systemy Cyfrowe/CNN/testCase.c
+
+/home/kacpro/5 semestr/Systemy Cyfrowe/CNN/sigmoid.c
+math.h
+-
+matrix.c
+/home/kacpro/5 semestr/Systemy Cyfrowe/CNN/matrix.c
+
+/home/kacpro/5 semestr/Systemy Cyfrowe/CNN/testCase.c
+stdlib.h
+-
+stdio.h
+-
+time.h
+-
+matrix.c
+/home/kacpro/5 semestr/Systemy Cyfrowe/CNN/matrix.c
+

@@ -18,16 +18,19 @@
 
 \title{Teoria współbieżności\\laboratorium 1}
 \author{Kacper Janda}
-\date{}
 \maketitle
 
 \section{Zadanie}
-W systemie dziala N wątkow, które dzielą obiekt licznika (początkowy stan licznika = 0). Każdy wątek wykonuje w pętli 5 razy inkrementację licznika. Zakładamy, że inkrementacja składa się z sekwencji trzech instrukcji: read, inc, write (odczyt z pamięci, zwiększenie o 1, zapis do pamięci). Wątki nie są synchronizowane.
+W systemie dziala \begin{math} N \end{math} wątkow, które dzielą obiekt licznika (początkowy stan licznika = \begin{math} 0 \end{math}). Każdy wątek wykonuje w pętli \begin{math} 5 \end{math} razy inkrementację licznika. Zakładamy, że inkrementacja składa się z sekwencji trzech instrukcji: read, inc, write (odczyt z pamięci, zwiększenie o \begin{math} 1 \end{math}, zapis do pamięci). Wątki nie są synchronizowane.
 
-\subsection{Jaka jest teoretycznie najmniejsza wartość licznika po zakończeniu działania wszystkich wątków i jaka kolejność instrukcji (przeplot) do niej prowadzi?}
-Najmniejsza teoretyczna wartość licznika wynosi \begin{math} N \end{math}. Powstaje ona na przykład w przypadku gdy jeden z wątków wykona operacje read oraz inc, następnie wszystkie pozostałe wątki wykonają wszystkie swoje operacje, a na koniec 'pierwszy' wątek wykona operację write.
+\begin{enumerate}
 
-\subsection{Analogiczne pytanie -- jaka jest maksymalna wartość licznika i odpowiedni przeplot instrukcji?}
+\item Jaka jest teoretycznie najmniejsza wartość licznika po zakończeniu działania wszystkich wątków i jaka kolejność instrukcji (przeplot) do niej prowadzi?\\\\
+Najmniejsza teoretyczna wartość licznika wynosi \begin{math} 5 \end{math}. Powstaje ona na przykład gdy \begin{math} N-1 \end{math} wątków wykona wszystkie swoje operacje pomiędzy operacjami inc oraz write wątku \begin{math} N \end{math}-tego.\\
+
+\item Analogiczne pytanie -- jaka jest maksymalna wartość licznika i odpowiedni przeplot instrukcji?\\\\
 Największa możliwa wartość licznika wynosi \begin{math} 5N \end{math} i powstaje gdy wątki działają sekwencyjnie.
+
+\end{enumerate}
 
 \end{document}

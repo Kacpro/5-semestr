@@ -16,15 +16,31 @@ struct matrix
 };
 
 
+void matrixFree(Matrix m)
+{
+    for (int i=0; i<m.rowNum; i++)
+    {
+        free(m.value[i]);
+    }
+    free(m.value);
+}
+
+
 
 Matrix matrixInit(int rowNum, int columnNum, double **value)
 {
-    double **newValue = calloc(rowNum, sizeof(double *));
-    for (int i = 0; i < rowNum; i++)
+    double **newValue;
+    if (value == NULL)
     {
-        newValue[i] = calloc(columnNum, sizeof(double));
-        for (int j = 0; j < columnNum; j++)
-            newValue[i][j] = 0;
+        newValue = calloc((size_t) rowNum, sizeof(double *));
+        for (int i = 0; i < rowNum; i++)
+        {
+            newValue[i] = calloc((size_t) columnNum, sizeof(double));
+            for (int j = 0; j < columnNum; j++)
+            {
+                newValue[i][j] = 0;
+            }
+        }
     }
 
     Matrix newMatrix =
@@ -41,6 +57,7 @@ Matrix matrixInit(int rowNum, int columnNum, double **value)
 
 Matrix matrixAdd(Matrix m1, Matrix m2)
 {
+//    printf("+ %d %d %d %d\n", m1.rowNum, m1.columnNum, m2.rowNum, m2.columnNum);
     if (m1.rowNum != m2.rowNum || m1.columnNum != m2.columnNum)
     {
         exit(-1);
@@ -55,13 +72,18 @@ Matrix matrixAdd(Matrix m1, Matrix m2)
             newValue[i][j] = m1.value[i][j] + m2.value[i][j];
         }
     }
+    Matrix result = matrixInit(m1.rowNum, m1.columnNum, newValue);
 
-    return matrixInit(m1.rowNum, m1.columnNum, newValue);
+//    matrixFree(m1);
+//    matrixFree(m2);
+
+    return result;
 }
 
 
 Matrix matrixSubtract(Matrix m1, Matrix m2)
 {
+//    perror("SUB");
     if (m1.rowNum != m2.rowNum || m1.columnNum != m2.columnNum)
     {
         exit(-1);
@@ -77,41 +99,50 @@ Matrix matrixSubtract(Matrix m1, Matrix m2)
         }
     }
 
-    return matrixInit(m1.rowNum, m1.columnNum, newValue);
-}
+    Matrix result = matrixInit(m1.rowNum, m1.columnNum, newValue);
 
-
-
-double matrixDot(Matrix m1, Matrix m2)
-{
-    if (m1.rowNum != 1 || m2.rowNum != 1 || m1.columnNum != m2.columnNum)
-    {
-        exit(-1);
-    }
-
-    double result = 0;
-    for(int i=0; i<m1.columnNum; i++)
-        result += m1.value[0][i] * m2.value[0][i];
+//    matrixFree(m1);
+//    matrixFree(m2);
 
     return result;
 }
 
 
+//
+//double matrixDot(Matrix m1, Matrix m2)
+//{
+//    if (m1.rowNum != 1 || m2.rowNum != 1 || m1.columnNum != m2.columnNum)
+//    {
+//        exit(-1);
+//    }
+//
+//    double result = 0;
+//    for(int i=0; i<m1.columnNum; i++)
+//        result += m1.value[0][i] * m2.value[0][i];
+//
+//    return result;
+//}
+
+
 
 Matrix matrixElementMul(Matrix m1, Matrix m2)
 {
-    if (m1.columnNum != 1 || m2.columnNum != 1 || m1.rowNum != m2.rowNum)
-    {
-        exit(-1);
-    }
-
-    double** newValue = calloc(m1.rowNum, sizeof(double*));
+    double** newValue = calloc((size_t)m1.rowNum, sizeof(double*));
     for (int i=0; i<m1.rowNum; i++)
     {
-        newValue[i][0] = m1.value[i][0] * m2.value[i][0];
+        newValue[i] = calloc((size_t)m1.columnNum, sizeof(double));
+        for (int j=0; j<m1.columnNum; j++)
+        {
+            newValue[i][j] = m1.value[i][j] * m2.value[i][j];
+        }
     }
 
-    return matrixInit(m1.rowNum, 1, newValue);
+    Matrix result = matrixInit(m1.rowNum, m1.columnNum, newValue);
+
+//    matrixFree(m1);
+//    matrixFree(m2);
+
+    return result;
 }
 
 
@@ -125,8 +156,11 @@ Matrix matrixTranspose(Matrix m)
         for (int j=0; j<m.rowNum; j++)
             newValue[i][j] = m.value[j][i];
     }
+    Matrix result = matrixInit(m.columnNum, m.rowNum, newValue);
 
-    return matrixInit(m.columnNum, m.rowNum, newValue);
+//    matrixFree(m);
+
+    return result;
 }
 
 
@@ -143,13 +177,21 @@ void matrixPrint(Matrix m)
 
 Matrix matrixScalarMul(Matrix m, double z)
 {
+//    perror("scalar");
+
     double** newValue = calloc(m.rowNum, sizeof(double*));
     for (int i=0; i<m.rowNum; i++)
     {
+        newValue[i] = calloc(m.columnNum, sizeof(double));
         for (int j=0; j<m.columnNum; j++)
             newValue[i][j] = m.value[i][j] * z;
     }
-    return matrixInit(m.rowNum, m.columnNum, newValue);
+    Matrix result = matrixInit(m.rowNum, m.columnNum, newValue);
+
+//    matrixFree(m);
+
+//    perror("scalar end");
+    return result;
 }
 
 
@@ -157,6 +199,7 @@ Matrix matrixMul(Matrix m1, Matrix m2)
 {
     if (m1.columnNum != m2.rowNum)
     {
+//        perror("matrixMul");
         exit(-1);
     }
 
@@ -200,8 +243,11 @@ Matrix innerConvolution(Matrix source, Matrix filter)
 {
     if (source.columnNum < filter.columnNum || source.rowNum < filter.rowNum)
     {
+        perror("inner");
         exit(-1);
     }
+
+//    printf("ttt: %d %d %d %d\n", source.rowNum, source.columnNum, filter.rowNum, filter.columnNum);
 
     double** value = calloc((size_t)(source.rowNum - filter.rowNum + 1), sizeof(double*));
     for (int i=0; i<(source.rowNum - filter.rowNum + 1); i++)
@@ -226,8 +272,7 @@ Matrix innerConvolution(Matrix source, Matrix filter)
 
 Matrix outerConvolution(Matrix source, Matrix filter)
 {
-    matrixPrint(source);
-    matrixPrint(filter);
+//    printf("outer: %d %d %d %d\n", source.rowNum, source.columnNum, filter.rowNum, filter.columnNum);
 
     double** value = calloc((size_t)(source.rowNum + filter.rowNum - 1), sizeof(double*));
     for (int i=0; i<(source.rowNum + filter.rowNum - 1); i++)
@@ -294,6 +339,30 @@ Matrix matrixGenerate(int rows, int columns)
     return matrixInit(rows, columns, value);
 }
 
+
+double matrixSumElements(Matrix m)
+{
+    double result = 0;
+    for (int i=0; i<m.rowNum; i++)
+        for (int j=0; j<m.columnNum; j++)
+            result += m.value[i][j];
+    return result;
+}
+
+
+Matrix matrixRotation(Matrix m)
+{
+    double** value = calloc((size_t)m.rowNum, sizeof(double*));
+    for (int i=0; i<m.rowNum; i++)
+    {
+        value[i] = calloc((size_t)m.columnNum, sizeof(double));
+        for (int j=0; j<m.columnNum; j++)
+        {
+            value[i][j] = m.value[m.rowNum - 1 - i][m.columnNum - 1 - j];
+        }
+    }
+    return matrixInit(m.rowNum, m.columnNum, value);
+}
 
 
 #endif

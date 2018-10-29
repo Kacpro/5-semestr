@@ -197,6 +197,7 @@ FROM WYCIECZKI w;
 
 
 
+
 CREATE VIEW wycieczki_dostepne
 AS
 SELECT
@@ -224,7 +225,6 @@ JOIN osoby o on o.ID_OSOBY = r.ID_OSOBY
 WHERE w.DATA - CURRENT_DATE < 7 and r.STATUS = 'N' and w.DATA > CURRENT_DATE;
 
 
-
 CREATE OR REPLACE TYPE uczestnicy_wycieczki_type
 AS OBJECT
 (
@@ -244,15 +244,23 @@ RETURN uczestnicy_wycieczki_table_type
 PIPELINED
 AS
 BEGIN
-  if (select count(*) from wycieczki w where w.ID_WYCIECZKI = wycieczka_id) = 0 then
-    raise NO_DATA_FOUND;
-  else
-    FOR x in (select * from wycieczki_osoby wo where wo.ID_WYCIECZKI = wycieczka_id) LOOP
-      PIPE ROW (uczestnicy_wycieczki_type(x.KRAJ, x.DATA, x.NAZWA, x.IMIE, x.NAZWISKO, x.STATUS));
-    END LOOP;
-  end if;
+  declare
+    counter number;
+  begin
+    select count(*) into counter from wycieczki w where w.ID_WYCIECZKI = wycieczka_id;
+    if counter = 0 then
+      raise NO_DATA_FOUND;
+    else
+      FOR x in (select * from wycieczki_osoby wo where wo.ID_WYCIECZKI = wycieczka_id) LOOP
+        PIPE ROW (uczestnicy_wycieczki_type(x.KRAJ, x.DATA, x.NAZWA, x.IMIE, x.NAZWISKO, x.STATUS));
+      END LOOP;
+    end if;
+    end;
 END;
 
+
+select * from table(uczestnicy_wycieczki(2));
+select * from wycieczki;
 
 
 CREATE OR REPLACE TYPE rezerwacje_osoby_type
@@ -274,13 +282,18 @@ RETURN rezerwacje_osoby_table_type
 PIPELINED
 AS
 BEGIN
-  if (select count(*) from osoby o where o.ID_OSOBY = osoba_id) = 0 then
-    raise NO_DATA_FOUND;
-  else
-    FOR x in (select * from wycieczki_osoby wo where wo.ID_OSOBY = osoba_id) LOOP
-      PIPE ROW (rezerwacje_osoby_type(x.KRAJ, x.DATA, x.NAZWA, x.IMIE, x.NAZWISKO, x.STATUS));
-    END LOOP;
-  end if;
+  declare
+    counter number;
+    begin
+      select count(*) into counter from osoby o where o.ID_OSOBY = osoba_id;
+      if (counter = 0) then
+        raise NO_DATA_FOUND;
+      else
+        FOR x in (select * from wycieczki_osoby wo where wo.ID_OSOBY = osoba_id) LOOP
+          PIPE ROW (rezerwacje_osoby_type(x.KRAJ, x.DATA, x.NAZWA, x.IMIE, x.NAZWISKO, x.STATUS));
+        END LOOP;
+      end if;
+    end;
 END;
 
 
@@ -304,13 +317,18 @@ RETURN przyszle_rezerwacje_osoby_table_type
 PIPELINED
 AS
 BEGIN
-  if (select count(*) from OSOBY o where o.ID_OSOBY = osoba_id = 0) then
-    raise NO_DATA_FOUND;
-  else
-    FOR x in (select * from wycieczki_przyszle wp where wp.ID_OSOBY = osoba_id) LOOP
-      PIPE ROW (przyszle_rezerwacje_osoby_type(x.KRAJ, x.DATA, x.NAZWA, x.IMIE, x.NAZWISKO, x.STATUS));
-    END LOOP;
-  end if;
+  declare
+  counter number;
+    begin
+      select count(*) into counter from OSOBY o where o.ID_OSOBY = osoba_id;
+      if (counter = 0) then
+        raise NO_DATA_FOUND;
+      else
+        FOR x in (select * from wycieczki_przyszle wp where wp.ID_OSOBY = osoba_id) LOOP
+          PIPE ROW (przyszle_rezerwacje_osoby_type(x.KRAJ, x.DATA, x.NAZWA, x.IMIE, x.NAZWISKO, x.STATUS));
+        END LOOP;
+      end if;
+    end;
 END;
 
 
@@ -329,7 +347,7 @@ AS OBJECT
 CREATE OR REPLACE TYPE dostepne_wycieczki_table_type
 AS TABLE OF dostepne_wycieczki_type;
 
-CREATE OR REPLACE FUNCTION dostepne_wycieczki(kraj in VARCHAR(30), data_od in DATE, data_do in DATE)
+CREATE OR REPLACE FUNCTION dostepne_wycieczki(kraj in VARCHAR, data_od in DATE, data_do in DATE)
 RETURN dostepne_wycieczki_table_type
 PIPELINED
 AS
@@ -345,56 +363,83 @@ END;
 create or replace procedure dodaj_rezerwacje(wycieczka_id NUMBER, osoba_id NUMBER)
 is
 begin
-  if (select count(*) from wycieczki w where w.ID_WYCIECZKI = wycieczka_id and w.DATA > CURRENT_DATE) = 0 or (select count(*) from wycieczki_miejsca wm where wm.ID_WYCIECZKI = wycieczka_id and wm.WOLNE_MIEJSCA > 0) = 0 then
-    raise NO_DATA_FOUND ;
-  else
-    insert into REZERWACJE(ID_WYCIECZKI, ID_OSOBY, STATUS)
-           values(wycieczka_id, osoba_id, 'N');
+  declare
+    counter1 number;
+    counter2 number;
+  begin
+    select count(*) into counter1 from wycieczki w where w.ID_WYCIECZKI = wycieczka_id and w.DATA > CURRENT_DATE;
+    select count(*) into counter2 from wycieczki_miejsca wm where wm.ID_WYCIECZKI = wycieczka_id and wm.WOLNE_MIEJSCA > 0;
+    if (counter1 = 0 or  counter2 = 0) then
+      raise NO_DATA_FOUND ;
+    else
+      insert into REZERWACJE(ID_WYCIECZKI, ID_OSOBY, STATUS)
+             values(wycieczka_id, osoba_id, 'N');
 
-    insert into REZERWACJE_LOG(ID_REZERWACJI, DATA, STATUS)
-          values((select r.NR_REZERWACJI from rezerwacje r where r.ID_WYCIECZKI = wycieczka_id and r.ID_OSOBY = osoba_id and rownum = 1) , CURRENT_DATE, 'N');
-    commit;
-  end if;
+      insert into REZERWACJE_LOG(ID_REZERWACJI, DATA, STATUS)
+            values((select r.NR_REZERWACJI from rezerwacje r where r.ID_WYCIECZKI = wycieczka_id and r.ID_OSOBY = osoba_id and rownum = 1) , CURRENT_DATE, 'N');
+      commit;
+    end if;
+  end;
+end;
+
+select * from rezerwacje;
+select * from wycieczki;
+select * from wycieczki_miejsca;
+begin
+  dodaj_rezerwacje(1, 22);
 end;
 
 
-
-create or replace procedure zmien_status_rezerwacji(rezerwacja_id NUMBER, nowy_status VARCHAR(1))
+create or replace procedure zmien_status_rezerwacji(rezerwacja_id NUMBER, nowy_status VARCHAR)
 is
 begin
-  if (select count(*) from rezerwacje r where r.NR_REZERWACJI = rezerwacja_id) = 0  then
-    raise NO_DATA_FOUND ;
-  else
-    declare
-    obecny_status VARCHAR(1) := (select r.STATUS from REZERWACJE r where r.NR_REZERWACJI = rezerwacja_id);
-    begin
-      if obecny_status = 'A' then
-        raise INVALID_NUMBER;
-      else
-        update REZERWACJE set STATUS = nowy_status where NR_REZERWACJI = rezerwacja_id;
+  declare
+    counter number;
+  begin
+    select count(*) into counter from rezerwacje r where r.NR_REZERWACJI = rezerwacja_id;
+    if (counter = 0)  then
+      raise NO_DATA_FOUND ;
+    else
+      declare
+      obecny_status VARCHAR(1);
+      begin
+        select r.STATUS into obecny_status from REZERWACJE r where r.NR_REZERWACJI = rezerwacja_id;
+        if obecny_status = 'A' then
+          raise INVALID_NUMBER;
+        else
+          update REZERWACJE set STATUS = nowy_status where NR_REZERWACJI = rezerwacja_id;
 
-        insert into REZERWACJE_LOG(ID_REZERWACJI, DATA, STATUS)
-          values(rezerwacja_id, CURRENT_DATE, nowy_status);
-        commit;
-      end if;
-    end;
-  end if;
+          insert into REZERWACJE_LOG(ID_REZERWACJI, DATA, STATUS)
+            values(rezerwacja_id, CURRENT_DATE, nowy_status);
+          commit;
+        end if;
+      end;
+    end if;
+  end;
 end;
+
 
 
 create or replace procedure zmien_liczbe_miejsc(wycieczka_id NUMBER, nowa_liczba NUMBER)
 is
 begin
-  if (select count(*) from wycieczki w where w.ID_WYCIECZKI = wycieczka_id) = 0  then
-    raise NO_DATA_FOUND ;
-  else
-    if (select count(*) from wycieczki_miejsca wm where wm.ID_WYCIECZKI = wycieczka_id and wm.WOLNE_MIEJSCA >= wm.LICZBA_MIEJSC - nowa_liczba) = 0 then
-      raise INVALID_NUMBER;
+  declare
+    counter1 number;
+    counter2 number;
+  begin
+    select count(*) into counter1 from wycieczki w where w.ID_WYCIECZKI = wycieczka_id;
+    if (counter1 = 0)  then
+      raise NO_DATA_FOUND ;
     else
-      update WYCIECZKI set LICZBA_MIEJSC = nowa_liczba where ID_WYCIECZKI = wycieczka_id;
-      commit;
+      select count(*) into counter2 from wycieczki_miejsca wm where wm.ID_WYCIECZKI = wycieczka_id and wm.WOLNE_MIEJSCA >= wm.LICZBA_MIEJSC - nowa_liczba;
+      if (counter2 = 0) then
+        raise INVALID_NUMBER;
+      else
+        update WYCIECZKI set LICZBA_MIEJSC = nowa_liczba where ID_WYCIECZKI = wycieczka_id;
+        commit;
+      end if;
     end if;
-  end if;
+  end;
 end;
 
 
@@ -404,7 +449,7 @@ CREATE TABLE REZERWACJE_LOG
  ID INT GENERATED ALWAYS AS IDENTITY NOT NULL
 ,ID_REZERWACJI INT
 ,DATA DATE
-,STATUS CHAR(1)
+,STATUS VARCHAR(1)
 ,CONSTRAINT REZERWACJE_LOG_PK PRIMARY KEY(ID)
  ENABLE
 );
@@ -449,53 +494,81 @@ create or replace procedure przelicz
 is
 begin
   update WYCIECZKI w
-  set LICZBA_WOLNYCH_MIEJSC = (select wm.WOLNE_MIEJSCA from wycieczki_miejsca wm where wm.ID_WYCIECZKI = w.ID_WYCIECZKI)
+  set w.LICZBA_WOLNYCH_MIEJSC = (select wm.WOLNE_MIEJSCA from wycieczki_miejsca wm where wm.ID_WYCIECZKI = w.ID_WYCIECZKI)
   where w.LICZBA_WOLNYCH_MIEJSC is null;
   commit;
 end;
+
+  select * from wycieczki_miejsca;
+
+  select * from wycieczki;
+select * from wycieczki_miejsca;
+
+
+
+  begin
+    przelicz();
+  end;
 
 
 create or replace procedure dodaj_rezerwacje2(wycieczka_id NUMBER, osoba_id NUMBER)
 is
 begin
-  if (select count(*) from wycieczki w where w.ID_WYCIECZKI = wycieczka_id and w.DATA > CURRENT_DATE and w.LICZBA_WOLNYCH_MIEJSC > 0) = 0 then
-    raise NO_DATA_FOUND ;
-  else
-    insert into REZERWACJE(ID_WYCIECZKI, ID_OSOBY, STATUS)
-           values(wycieczka_id, osoba_id, 'N');
+  declare
+    counter number;
+  begin
+    select count(*) into counter from wycieczki w where w.ID_WYCIECZKI = wycieczka_id and w.DATA > CURRENT_DATE and w.LICZBA_WOLNYCH_MIEJSC > 0;
+    if (counter = 0) then
+      raise NO_DATA_FOUND ;
+    else
+      insert into REZERWACJE(ID_WYCIECZKI, ID_OSOBY, STATUS)
+             values(wycieczka_id, osoba_id, 'N');
 
-    insert into REZERWACJE_LOG(ID_REZERWACJI, DATA, STATUS)
-          values((select r.NR_REZERWACJI from rezerwacje r where r.ID_WYCIECZKI = wycieczka_id and r.ID_OSOBY = osoba_id and rownum = 1) , CURRENT_DATE, 'N');
-    commit;
-  end if;
+      insert into REZERWACJE_LOG(ID_REZERWACJI, DATA, STATUS)
+            values((select r.NR_REZERWACJI from rezerwacje r where r.ID_WYCIECZKI = wycieczka_id and r.ID_OSOBY = osoba_id and rownum = 1) , CURRENT_DATE, 'N');
+      commit;
+    end if;
+  end;
 end;
 
 
 create or replace procedure zmien_liczbe_miejsc2(wycieczka_id NUMBER, nowa_liczba NUMBER)
 is
 begin
-  if (select count(*) from wycieczki w where w.ID_WYCIECZKI = wycieczka_id and w.LICZBA_WOLNYCH_MIEJSC >= w.LICZBA_MIEJSC - nowa_liczba) = 0  then
-    raise NO_DATA_FOUND ;
-  else
-    update WYCIECZKI w
-    set LICZBA_WOLNYCH_MIEJSC = nowa_liczba - (w.LICZBA_MIEJSC - w.LICZBA_WOLNYCH_MIEJSC);
-    commit;
+  declare
+    counter number;
+  begin
+    select count(*) into counter from wycieczki w where w.ID_WYCIECZKI = wycieczka_id and w.LICZBA_WOLNYCH_MIEJSC >= w.LICZBA_MIEJSC - nowa_liczba;
+    if (counter = 0)  then
+      raise NO_DATA_FOUND ;
+    else
+      update WYCIECZKI w
+      set w.LICZBA_WOLNYCH_MIEJSC = nowa_liczba - (w.LICZBA_MIEJSC - w.LICZBA_WOLNYCH_MIEJSC),
+          w.LICZBA_MIEJSC = nowa_liczba
+      where w.ID_WYCIECZKI = wycieczka_id;
+      commit;
 
-    update WYCIECZKI w
-    set LICZBA_MIEJSC = nowa_liczba;
-    commit;
-  end if;
+    end if;
+  end;
+end;
+
+
+select * from wycieczki;
+
+begin
+  zmien_liczbe_miejsc2(5, 7);
 end;
 
 
 
 CREATE OR REPLACE TRIGGER dodaj_log
 AFTER INSERT OR UPDATE ON REZERWACJE
-REFERENCING NEW as n
+FOR EACH ROW
 BEGIN
    insert into REZERWACJE_LOG(ID_REZERWACJI, DATA, STATUS)
-   values(n.NR_REZERWACJI, CURRENT_DATE, n.STATUS);
+   values(:new.NR_REZERWACJI, CURRENT_DATE, :new.STATUS);
 END;
+
 
 CREATE OR REPLACE TRIGGER blokuj_usuwanie
 BEFORE DELETE ON REZERWACJE
@@ -507,34 +580,52 @@ END;
 create or replace procedure dodaj_rezerwacje3(wycieczka_id NUMBER, osoba_id NUMBER)
 is
 begin
-  if (select count(*) from wycieczki w where w.ID_WYCIECZKI = wycieczka_id and w.DATA > CURRENT_DATE and w.LICZBA_WOLNYCH_MIEJSC > 0) = 0 then
-    raise NO_DATA_FOUND ;
-  else
-    insert into REZERWACJE(ID_WYCIECZKI, ID_OSOBY, STATUS)
-           values(wycieczka_id, osoba_id, 'N');
-    commit;
-  end if;
+  declare
+    counter1 number;
+    counter2 number;
+  begin
+    select count(*) into counter1 from wycieczki w where w.ID_WYCIECZKI = wycieczka_id and w.DATA > CURRENT_DATE and w.LICZBA_WOLNYCH_MIEJSC > 0;
+    select count(*) into counter2 from osoby o where o.ID_OSOBY = osoba_id;
+    if (counter1 = 0 or counter2 = 0) then
+      raise NO_DATA_FOUND ;
+    else
+      insert into REZERWACJE(ID_WYCIECZKI, ID_OSOBY, STATUS)
+             values(wycieczka_id, osoba_id, 'N');
+      commit;
+    end if;
+  end;
 end;
 
 
 
-create or replace procedure zmien_status_rezerwacji3(rezerwacja_id NUMBER, nowy_status VARCHAR(1))
+create or replace procedure zmien_status_rezerwacji3(rezerwacja_id NUMBER, nowy_status VARCHAR)
 is
 begin
-  if (select count(*) from rezerwacje r where r.NR_REZERWACJI = rezerwacja_id) = 0  then
-    raise NO_DATA_FOUND ;
-  else
-    declare
-    obecny_status VARCHAR(1) := (select r.STATUS from REZERWACJE r where r.NR_REZERWACJI = rezerwacja_id);
-    begin
-      if obecny_status = 'A' then
-        raise INVALID_NUMBER;
-      else
-        update REZERWACJE set STATUS = nowy_status where NR_REZERWACJI = rezerwacja_id;
-        commit;
-      end if;
-    end;
-  end if;
+  declare
+    counter number;
+  begin
+    select count(*) into counter from rezerwacje r where r.NR_REZERWACJI = rezerwacja_id;
+    if (counter = 0)  then
+      raise NO_DATA_FOUND ;
+    else
+      declare
+      obecny_status VARCHAR(1);
+      begin
+        select r.STATUS into obecny_status from REZERWACJE r where r.NR_REZERWACJI = rezerwacja_id;
+        if obecny_status = 'A' then
+          raise INVALID_NUMBER;
+        else
+          update REZERWACJE set STATUS = nowy_status where NR_REZERWACJI = rezerwacja_id;
+          commit;
+        end if;
+      end;
+    end if;
+  end;
+end;
+
+select * from rezerwacje;
+begin
+  zmien_status_rezerwacji(63, 'Z');
 end;
 
 
@@ -542,53 +633,76 @@ end;
 create or replace procedure dodaj_rezerwacje3(wycieczka_id NUMBER, osoba_id NUMBER)
 is
 begin
-  if (select count(*) from wycieczki w where w.ID_WYCIECZKI = wycieczka_id and w.DATA > CURRENT_DATE) = 0 or (select count(*) from wycieczki_miejsca wm where wm.ID_WYCIECZKI = wycieczka_id and wm.WOLNE_MIEJSCA > 0) = 0 then
-    raise NO_DATA_FOUND ;
-  else
-    insert into REZERWACJE(ID_WYCIECZKI, ID_OSOBY, STATUS)
-           values(wycieczka_id, osoba_id, 'N');
-    commit;
-  end if;
+  declare
+    counter1 number;
+    counter2 number;
+  begin
+    select count(*) into counter1 from wycieczki w where w.ID_WYCIECZKI = wycieczka_id and w.DATA > CURRENT_DATE;
+    select count(*) into counter2 from wycieczki_miejsca wm where wm.ID_WYCIECZKI = wycieczka_id and wm.WOLNE_MIEJSCA > 0;
+    if (counter1 = 0) or  (counter2 = 0) then
+      raise NO_DATA_FOUND ;
+    else
+      insert into REZERWACJE(ID_WYCIECZKI, ID_OSOBY, STATUS)
+             values(wycieczka_id, osoba_id, 'N');
+      commit;
+    end if;
+  end;
+end;
+
+  select * from rezerwacje;
+begin
+  dodaj_rezerwacje3(1, 23);
 end;
 
 
 
 CREATE OR REPLACE TRIGGER dodanie_rezerwacji
 AFTER INSERT ON REZERWACJE
-REFERENCING NEW as n
+FOR EACH ROW
 BEGIN
-   if (n.STATUS = 'P' or n.STATUS = 'Z') then
-     update WYCIECZKI w set w.LICZBA_WOLNYCH_MIEJSC = w.LICZBA_WOLNYCH_MIEJSC - 1 where w.ID_WYCIECZKI = n.ID_WYCIECZKI;
+   if (:new.STATUS = 'P' or :new.STATUS = 'Z') then
+     update WYCIECZKI w set w.LICZBA_WOLNYCH_MIEJSC = w.LICZBA_WOLNYCH_MIEJSC - 1 where w.ID_WYCIECZKI = :new.ID_WYCIECZKI;
    end if;
 END;
 
 
 CREATE OR REPLACE TRIGGER edycja_rezerwacji
 AFTER UPDATE ON REZERWACJE
-REFERENCING NEW as n OLD as o
+FOR EACH ROW
 BEGIN
-   if (n.STATUS = 'P' or n.STATUS = 'Z') and (o.STATUS != 'Z' and o.STATUS != 'P') then
-     update WYCIECZKI w set w.LICZBA_WOLNYCH_MIEJSC = w.LICZBA_WOLNYCH_MIEJSC - 1 where w.ID_WYCIECZKI = n.ID_WYCIECZKI;
+   if (:new.STATUS = 'P' or :new.STATUS = 'Z') and (:old.STATUS != 'Z' and :old.STATUS != 'P') then
+     update WYCIECZKI w set w.LICZBA_WOLNYCH_MIEJSC = w.LICZBA_WOLNYCH_MIEJSC - 1 where w.ID_WYCIECZKI = :new.ID_WYCIECZKI;
    end if;
 END;
 
 
 CREATE OR REPLACE TRIGGER edycja_wycieczki
-AFTER UPDATE ON WYCIECZKI
-REFERENCING NEW as n OLD as o
+BEFORE UPDATE ON WYCIECZKI
+FOR EACH ROW
 BEGIN
-   update WYCIECZKI w set w.LICZBA_WOLNYCH_MIEJSC = n.LICZBA_MIEJSC - (o.LICZBA_MIEJSC - o.LICZBA_WOLNYCH_MIEJSC) where w.ID_WYCIECZKI = n.ID_WYCIECZKI;
+   :new.LICZBA_WOLNYCH_MIEJSC := :new.LICZBA_MIEJSC - (:old.LICZBA_MIEJSC - :old.LICZBA_WOLNYCH_MIEJSC);
 END;
 
 create or replace procedure zmien_liczbe_miejsc3(wycieczka_id NUMBER, nowa_liczba NUMBER)
 is
 begin
-  if (select count(*) from wycieczki w where w.ID_WYCIECZKI = wycieczka_id and w.LICZBA_WOLNYCH_MIEJSC >= w.LICZBA_MIEJSC - nowa_liczba) = 0  then
-    raise NO_DATA_FOUND ;
-  else
-    update WYCIECZKI w
-    set LICZBA_MIEJSC = nowa_liczba;
-    commit;
-  end if;
+  declare
+    counter number;
+  begin
+    select count(*) into counter from wycieczki w where w.ID_WYCIECZKI = wycieczka_id and w.LICZBA_WOLNYCH_MIEJSC >= w.LICZBA_MIEJSC - nowa_liczba;
+    if  (counter = 0)  then
+      raise NO_DATA_FOUND ;
+    else
+      update WYCIECZKI w
+      set w.LICZBA_MIEJSC = nowa_liczba
+      where w.ID_WYCIECZKI = wycieczka_id;
+      commit;
+    end if;
+  end;
 end;
 
+select * from wycieczki;
+
+begin
+  zmien_liczbe_miejsc3(5, 7);
+end;

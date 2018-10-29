@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2018.10.12)  15 OCT 2018 07:38
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2018.10.12)  18 OCT 2018 21:42
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -735,38 +735,52 @@ LaTeX Info: Redefining \nameref on input line 17.
 \@outlinefile=\write3
 \openout3 = `spr.out'.
 
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 33.
- [1
+
+Underfull \hbox (badness 10000) in paragraph at lines 28--30
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 28--30
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 31--33
+
+ []
+
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 36.
+[1
 
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 33.
-
-(./spr.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 33.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 33.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 36.
+ (./spr.aux)
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 36.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 36.
 Package rerunfilecheck Info: File `spr.out' has not changed.
-(rerunfilecheck)             Checksum: 7B899D7B6686CBFDD26B7E8E71FF866A;395.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 33.
+(rerunfilecheck)             Checksum: 9905CFCA52946CB279B6B5B99BCA66D9;42.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 36.
  ) 
 Here is how much of TeX's memory you used:
  9486 strings out of 494269
- 138037 string characters out of 6162727
- 260339 words of memory out of 5000000
- 12731 multiletter control sequences out of 15000+600000
- 12810 words of font info for 36 fonts, out of 8000000 for 9000
+ 138017 string characters out of 6162727
+ 261339 words of memory out of 5000000
+ 12732 multiletter control sequences out of 15000+600000
+ 12034 words of font info for 35 fonts, out of 8000000 for 9000
  392 hyphenation exceptions out of 8191
- 35i,6n,32p,355b,337s stack positions out of 5000i,500n,10000p,200000b,80000s
- </home/kacpro/.texlive2017/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1200.60
-0pk> </home/kacpro/.texlive2017/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm1095.
-600pk> </home/kacpro/.texlive2017/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx144
+ 35i,6n,32p,462b,335s stack positions out of 5000i,500n,10000p,200000b,80000s
+ </home/kacpro/.texlive2017/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm1095.60
+0pk> </home/kacpro/.texlive2017/texmf-var/fonts/pk/ljfour/jknappen/ec/ecbx1440.
+600pk> </home/kacpro/.texlive2017/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm120
 0.600pk> </home/kacpro/.texlive2017/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm1
-200.600pk> </home/kacpro/.texlive2017/texmf-var/fonts/pk/ljfour/jknappen/ec/ecr
-m1728.600pk></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi1
-0.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb>
-Output written on spr.pdf (1 page, 54041 bytes).
+728.600pk></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.
+pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></u
+sr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb>
+Output written on spr.pdf (1 page, 53466 bytes).
 PDF statistics:
- 173 PDF objects out of 1000 (max. 8388607)
- 48 compressed objects within 1 object stream
+ 141 PDF objects out of 1000 (max. 8388607)
+ 41 compressed objects within 1 object stream
  5 named destinations out of 1000 (max. 500000)
- 25 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 9 words of extra memory for PDF output out of 10000 (max. 10000000)
 

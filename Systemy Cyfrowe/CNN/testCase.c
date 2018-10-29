@@ -41,6 +41,18 @@ TestCase testCaseInit(Matrix input, int expectedValue)
 }
 
 
+void testsFree(TestCase* tests, int testsNum)
+{
+    for (int i=0; i<testsNum; i++)
+    {
+        matrixFree(tests[i].input);
+        matrixFree(tests[i].expected);
+    }
+    free(tests);
+}
+
+
+
 void testShuffle(TestCase* tests, int testsLen)
 {
     srand(time(0));
